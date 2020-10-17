@@ -1,0 +1,153 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <inttypes.h>
+#include <string.h>
+#include <mqueue.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#define MESSAGESIZE 1000
+
+#define Q_FLAGS O_RDWR | O_CREAT | O_EXCL
+#define Q_Mode S_IRUSR | S_IWUSR
+
+typedef enum
+{
+  CONNECTION_FAILED_CLIENTSIDE
+} error_rc_t;
+
+//*Global Variables *//
+const char *MqueueLocation = "/test_queue";
+//* Function Prototypes*//
+void *send(void *data);
+error_rc_t control_with_mqueue(int data);
+int32_t get_integer_input(void);
+
+int main(void)
+{
+  pthread_t th1;
+  pthread_create(&th1, NULL, send, NULL);
+  pthread_join(th1, NULL);
+
+  return 0;
+}
+
+void *send(void *data)
+{
+  int keyboard_input;
+  while (1)
+  {
+    printf("\nEnter 1 for Train Node Commands\n");
+    printf("\nEnter 2 for Intersection North Commands\n");
+    printf("\nEnter 3 for  Intersection South Commands\n\n");
+    keyboard_input = get_integer_input();
+    if (keyboard_input == 1)
+    {
+      printf("\nPress 1 to set Peak-Hour\n");
+      printf("\nPress 2 to set OFF-Peak \n");
+      keyboard_input = get_integer_input();
+      if (keyboard_input == 1)
+      {
+      }
+      else if (keyboard_input == 2)
+      {
+      }
+      else
+      {
+        printf("\nIncorrect input going to start\n");
+      }
+    }
+    else if (keyboard_input == 2)
+    {
+      printf("\nPress 1 to set Peak-Hour\n");
+      printf("\nPress 2 to set OFF-Peak \n");
+      keyboard_input = get_integer_input();
+      if (keyboard_input == 1)
+      {
+      }
+      else if (keyboard_input == 2)
+      {
+      }
+      else
+      {
+        printf("\nIncorrect input going to start\n");
+      }
+    }
+    else if (keyboard_input == 3)
+    {
+      printf("\nPress 1 to set Peak-Hour\n");
+      printf("\nPress 2 to set OFF-Peak \n");
+      keyboard_input = get_integer_input();
+      if (keyboard_input == 1)
+      {
+        (void)control_with_mqueue(3);
+      }
+      else if (keyboard_input == 2)
+      {
+      }
+      else
+      {
+        printf("\nIncorrect input going to start\n");
+      }
+    }
+    else
+    {
+      printf("\nIncorrect input going to start\n");
+    }
+  }
+}
+
+int32_t get_integer_input(void)
+{
+  int32_t input;
+  char *end;
+  char buf[30];
+  do
+  {
+    if (!fgets(buf, sizeof buf, stdin))
+    {
+      break;
+    }
+    buf[strlen(buf) - 1] = 0;
+    input = strtol(buf, &end, 10);
+  } while (end != buf + strlen(buf));
+  return input;
+}
+
+error_rc_t control_with_mqueue(int data)
+{
+
+  mqd_t qd;
+  char message[MESSAGESIZE] = {};
+  struct mq_attr attr;
+  attr.mq_maxmsg = 100;
+  attr.mq_msgsize = MESSAGESIZE;
+  attr.mq_flags = 0;
+  attr.mq_curmsgs = 0;
+  attr.mq_sendwait = 0;
+  attr.mq_recvwait = 0;
+  struct mq_attr *my_attr = &attr;
+  qd = mq_open(MqueueLocation, Q_FLAGS, Q_Mode, my_attr);
+  if (qd != -1)
+  {
+
+    printf("queue: '%i'\n", *message);    //print the message to this processes terminal
+    mq_send(qd, message, MESSAGESIZE, 0); //send the mqueue
+    sleep(2);
+    printf("\nAll Messages sent to the queue\n");
+    // as soon as this code executes the mqueue data will be deleted
+    // from the /dev/mqueue/test_queue  file structure
+    mq_close(qd);
+    mq_unlink(MqueueLocation);
+  }
+  else
+  {
+    printf("\nThere was an ERROR opening the message queue!");
+    printf("\nHave you started the 'mqueue' process on the VM target?\n");
+    printf("\nHave you started the 'qnet' process on the VM target?\n");
+  }
+
+  printf("\nmqueue send process Exited\n");
+  return EXIT_SUCCESS;
+}

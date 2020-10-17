@@ -1,0 +1,262 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <unistd.h>
+#include <sched.h>
+
+enum states
+{
+  State0,
+  State1,
+  State2,
+  State3
+};
+enum states CurState;
+enum TrueFalse
+{
+  True,
+  False
+};
+enum TrueFalse TrainSensorE;
+enum TrueFalse TrainSensorW;
+
+// Global Variables
+pthread_mutex_t condition_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t condition_cond = PTHREAD_COND_INITIALIZER;
+sem_t thread_control;
+
+int flag;
+int threadrun = 0;
+typedef enum
+{
+  OFF,
+  FLASHING,
+  CLOSED,
+  OPEN
+} Traffic_Light_States;
+//
+//enum states, OFF = 1, FLASHING = 2, CLOSED = 3, OPEN = 4
+//
+
+typedef struct
+{
+  int Lights;
+  int BoomGates;
+} Train_Outputs;
+
+typedef struct
+{
+  int lights;
+  int boomgates;
+  int state;
+} train_data_packet;
+
+train_data_packet central_node_data;
+
+// int PeakHour()
+//  {decodes whether it is peak hour based upon communication from central node defined by flag variable
+//     if (flag == 1)
+//       return 1;
+//     else
+//       return 0;
+//   }
+
+void state0_func(Train_Outputs *Light_Output)
+{
+  Light_Output->Lights = FLASHING;
+  Light_Output->BoomGates = OPEN;
+}
+
+void state1_func(Train_Outputs *Light_Output)
+{
+  Light_Output->Lights = FLASHING;
+  Light_Output->BoomGates = CLOSED;
+}
+
+void state2_func(Train_Outputs *Light_Output)
+{
+  Light_Output->Lights = FLASHING;
+  Light_Output->BoomGates = OPEN;
+}
+
+void state3_func(Train_Outputs *Light_Output)
+{
+
+  Light_Output->Lights = OFF;
+  Light_Output->BoomGates = OPEN;
+}
+
+void display_output(Train_Outputs *Light_Output)
+{
+
+  printf("Lights = %d\n", Light_Output->Lights);
+  if (Light_Output->Lights == 1)
+    printf("LIGHTS = OFF\n");
+  else
+    printf("LIGHTS = FLASHING\n");
+  //printf("	\n");
+  printf("BoomGates = %d \n", Light_Output->BoomGates);
+  if (Light_Output->BoomGates == 3)
+    printf("BOOMGATES = CLOSED\n");
+  else
+    printf("BOOMGATES = OPEN\n");
+  printf("	\n");
+}
+void BoomGateNS_SM(enum states *CurState)
+{
+
+  Train_Outputs States;
+
+  switch (*CurState)
+  {
+  case State0:
+    state0_func(&States);
+    *CurState = State1;
+
+    printf("State (0)\n");
+    TrainSensorE = False;
+    TrainSensorW = False;
+
+    sleep(2); //simulates gates beginning to close
+    break;
+
+  case State1:
+    state1_func(&States);
+    printf("State (1)\n");
+    sleep(5); //simulates train passing through
+
+    if (TrainSensorE == True || TrainSensorW == True)
+      *CurState = State1;
+    else
+      *CurState = State2;
+    break;
+
+  case State2:
+    state2_func(&States);
+    *CurState = State3;
+
+    printf("State (2)\n");
+    sleep(5); //simulates gates opening
+
+    break;
+
+  case State3:
+    state3_func(&States);
+
+    printf("State (3)\n");
+    sleep(2); //simulates time after gates are open and traffic can move through
+
+    if (TrainSensorE == True || TrainSensorW == True)
+      *CurState = State0;
+    else
+      *CurState = State3;
+
+    break;
+  }
+  display_output(&States);
+  sleep(1);
+}
+
+void Train_Sensor(enum states *CurState)
+{
+  int Runtimes = 4, counter = 0;
+  while (counter < Runtimes)
+  {
+    BoomGateNS_SM(CurState); // pass address
+    counter++;
+  }
+}
+
+void *thread_PeakHour(void *data)
+{
+  sem_wait(&thread_control);
+  printf("TRAIN CROSSING NODE IS SET TO PEAK HOUR\n");
+  //run this based on timers
+  while (threadrun != 1)
+  {
+    sleep(1);
+    printf("\nTrain coming\n");
+    enum states CurState = State0;
+    Train_Sensor(&CurState);
+    TrainSensorE = True;
+  }
+
+  printf("ENDING TRAIN CROSSING PEAK HOUR THREAD\n");
+  sem_post(&thread_control);
+  return 0;
+}
+
+void *thread_NotPeakHour(void *data)
+{
+  //run this based on timers
+  sem_wait(&thread_control);
+  printf("TRAIN CROSSING NODE IS SET TO NOT PEAK HOUR\n");
+
+  while (threadrun != 2)
+  {
+    sleep(2);
+    printf("\n");
+    printf("Train coming\n");
+    enum states CurState = State0;
+    Train_Sensor(&CurState);
+    TrainSensorE = True;
+  }
+  sem_post(&thread_control);
+  printf("EN&DING TRAIN CROSSING NOT PEAK HOUR THREAD\n");
+  return 0;
+}
+
+void Emergency_Thread()
+{ //add emergency states that will switch to this thread if there is no uplink with central node
+  //blinks lights yellow and then red
+}
+
+void Changing_PeakHour_Thread()
+{
+  //blinks all lights yellow once when changing from peak hour to non peak hour
+}
+
+int main(int argc, char *argv[])
+{
+  printf("STARTING TRAIN CROSSING NODE\n");
+
+  flag = 1; //for testing--replace with code to decide peak hour via IPC to central node
+
+  //trigger to create thread for local message passing whoch will trigger the train inputs
+  //trigger for ipc communication to accept user inputs for train sensors
+
+  pthread_t th1, th2;
+
+  //is it peak hour??
+  //if yes start peak if not start non peak
+  //if (PeakHour() == 0)
+  sem_init(&thread_control, NULL, 1);
+  //create threads then only swap if IPC comm is sent, so peak hour thread is constantly running unless swap
+  pthread_create(&th1, NULL, thread_PeakHour, NULL); //default starting position
+  pthread_create(&th2, NULL, thread_NotPeakHour, NULL);
+  int input;
+  while (1)
+  {
+    scanf("%i", &input);
+    if (input == 1)
+    {
+      printf("-> PeakHour Open!\n");
+      threadrun = 1; // set variable for the condvar
+    }
+    else if (input == 2)
+    {
+      printf(" <-- Showers Closed!\n");
+      threadrun = 2; // close it
+    }
+  }
+
+  //interrupt thread creation for if uplink fails
+
+  pthread_join(th1, NULL);
+  pthread_join(th2, NULL);
+
+  printf("EXITING TRAIN CROSSING NODE\n");
+
+  return 0;
+}

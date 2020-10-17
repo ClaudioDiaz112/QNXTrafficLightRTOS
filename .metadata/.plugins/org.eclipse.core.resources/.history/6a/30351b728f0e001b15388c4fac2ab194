@@ -1,0 +1,46 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+//* Function Prototypes*//
+void *send(void *data);
+int32_t get_integer_input(void);
+
+int main(void)
+{
+  pthread_t th1;
+  pthread_create(&th1, NULL, send, NULL);
+  pthread_join(th1, NULL);
+
+  return 0;
+}
+
+void *send(void *data)
+{
+  int keyboard_input;
+  while (1)
+  {
+
+    printf("\nEnter 1 for Train Node Commands\n");
+    printf("\nEnter 2 for Intersection North Commands\n");
+    printf("\nEnter 3 for  Intersection South Commands\n");
+    keyboard_input = get_integer_input();
+  }
+}
+
+int32_t get_integer_input(void)
+{
+  int32_t input;
+  char *end;
+  char buf[30];
+  do
+  {
+    if (!fgets(buf, sizeof buf, stdin))
+    {
+      break;
+    }
+    buf[strlen(buf) - 1] = 0;
+    input = strtol(buf, &end, 10);
+  } while (end != buf + strlen(buf));
+  return input;
+}

@@ -1,0 +1,6 @@
+10:11:47 **** Incremental Build of configuration x86_64-debug for project Central_Node ****
+make -j12 all 
+make: Nothing to be done for 'all'.
+
+10:11:47 Build Finished (took 95ms)
+

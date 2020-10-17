@@ -1,0 +1,6 @@
+10:19:54 **** Incremental Build of configuration x86_64-debug for project Train_Node ****
+make -j12 all 
+make: Nothing to be done for 'all'.
+
+10:19:54 Build Finished (took 95ms)
+

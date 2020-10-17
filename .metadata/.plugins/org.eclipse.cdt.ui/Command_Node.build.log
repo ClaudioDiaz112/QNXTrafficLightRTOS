@@ -1,0 +1,7 @@
+03:03:34 **** Incremental Build of configuration x86_64-debug for project Command_Node ****
+make -j12 all 
+qcc -Vgcc_ntox86_64 -c -Wp,-MMD,build/x86_64-debug/src/Command_Node.d,-MT,build/x86_64-debug/src/Command_Node.o -o build/x86_64-debug/src/Command_Node.o  -Wall -fmessage-length=0 -g -O0 -fno-builtin  src/Command_Node.c
+qcc -Vgcc_ntox86_64 -o build/x86_64-debug/Command_Node   build/x86_64-debug/src/Command_Node.o  
+
+03:03:34 Build Finished (took 197ms)
+

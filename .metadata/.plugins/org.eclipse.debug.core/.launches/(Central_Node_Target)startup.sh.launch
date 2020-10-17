@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="com.qnx.tools.ide.qde.targetAppLaunch">
+<stringAttribute key="com.qnx.tools.ide.qde.core.ENV_NAME.0" value="hostname Central_Node_Target"/>
+<stringAttribute key="com.qnx.tools.ide.qde.core.ENV_VALUE.0" value=""/>
+<intAttribute key="com.qnx.tools.ide.qde.core.NUM_ENV_VARS" value="1"/>
+<booleanAttribute key="com.qnx.tools.ide.qde.core.TARGET_APP_CREATE_CONSOLE" value="true"/>
+<stringAttribute key="com.qnx.tools.ide.qde.core.TARGET_ATTR" value="Central_Node_Target"/>
+<stringAttribute key="com.qnx.tools.ide.qde.core.TARGET_DONTUSE_PTY" value="pickaptyforme"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_ARGUMENTS" value=""/>
+<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="/etc/startup.sh"/>
+</launchConfiguration>

@@ -1,0 +1,18 @@
+10:32:46 **** Incremental Build of configuration x86_64-debug for project Intersection_North_Node ****
+make -j12 all 
+qcc -Vgcc_ntox86_64 -c -Wp,-MMD,build/x86_64-debug/src/Intersection_North_Node.d,-MT,build/x86_64-debug/src/Intersection_North_Node.o -o build/x86_64-debug/src/Intersection_North_Node.o  -Wall -fmessage-length=0 -g -O0 -fno-builtin  src/Intersection_North_Node.c
+src/Intersection_North_Node.c: In function 'command_received':
+src/Intersection_North_Node.c:180:14: warning: unused variable 'rc' [-Wunused-variable]
+   error_rc_t rc;
+              ^
+src/Intersection_North_Node.c: In function 'receive_control_with_mqueue':
+src/Intersection_North_Node.c:576:7: warning: variable 'ret' set but not used [-Wunused-but-set-variable]
+   int ret;
+       ^
+src/Intersection_North_Node.c:575:14: warning: variable 'rc' set but not used [-Wunused-but-set-variable]
+   error_rc_t rc;
+              ^
+qcc -Vgcc_ntox86_64 -o build/x86_64-debug/Intersection_North_Node   build/x86_64-debug/src/Intersection_North_Node.o  
+
+10:32:47 Build Finished (took 197ms)
+
